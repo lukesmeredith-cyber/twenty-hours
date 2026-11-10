@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>20 Hours to Mastery</title>
+<meta name="description" content="A hi-fi practice timer. Bank your minutes into a mission and level up to 20 hours.">
+<meta name="theme-color" content="#b3aaa4">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="20 Hours">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Bowlby One";src:url(fonts/bowlby-one-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Bebas Neue";src:url(fonts/bebas-neue-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"VT323";src:url(fonts/vt323-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Fraunces";src:url(fonts/fraunces-latin-700-normal.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Rubik";src:url(fonts/rubik-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Rubik";src:url(fonts/rubik-latin-500-normal.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Rubik";src:url(fonts/rubik-latin-700-normal.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Rubik";src:url(fonts/rubik-latin-800-italic.woff2) format("woff2");font-weight:800;font-style:italic;font-display:swap}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+html,body{overscroll-behavior-y:none}
+</style>
+</head>
+<body>
+<style>
+/* Layout: one hi-fi console column. Display on top (ring / takeovers), transport keys below, two-tab bar at the foot. Deliberately single-theme hardware look. */
+:root{
+  --case:#b3aaa4; --case-2:#c2bab4; --key:#cfc7c1; --key-2:#a29a95; --ink:#1f1b24; --black:#141118;
+  --lcd:#e9dcc7; --cream:#fbf0c6; --paper:#fff6e2;
+  --pink:#e18fc7; --pink-dk:#c76aa8; --teal:#62c7b5; --teal-lt:#a8e2dc; --yellow:#f6c94a; --peri:#8fa3e8; --orange:#f39a5b; --green:#7cf06a; --red:#e04b5a;
+  --f-x:"Bowlby One","Arial Black",Impact,sans-serif;
+  --f-lcd:"Bebas Neue",Impact,"Arial Narrow",sans-serif;
+  --f-px:"VT323","Courier New",monospace;
+  --f-serif:"Fraunces",Georgia,serif;
+  --f-body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--case);color:var(--ink);font-family:var(--f-body);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.app{max-width:440px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;gap:14px;
+  padding-top:16px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.px{font-family:var(--f-px);font-weight:400}
+
+/* keys */
+.k{border:2.5px solid var(--ink);border-radius:9px;background:var(--key);box-shadow:inset 0 -6px 0 rgba(31,27,36,.16),0 4px 0 var(--ink);
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--ink);transition:transform .07s,box-shadow .07s;user-select:none;-webkit-user-select:none}
+.k:active:not(:disabled),.k.down{transform:translateY(3px);box-shadow:inset 0 4px 0 rgba(31,27,36,.22),0 1px 0 var(--ink)}
+.k:disabled{opacity:.5;cursor:not-allowed}
+.k.big{height:62px;width:100%;font-weight:700;font-size:18px}
+.boing{animation:boing .32s cubic-bezier(.3,1.7,.5,1)}
+@keyframes boing{0%{transform:scale(.9,1.08)}60%{transform:scale(1.05,.95)}100%{transform:none}}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{font-family:var(--f-x);font-size:24px;letter-spacing:1px;color:#fbe3b4;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;
+  text-shadow:2px 2px 0 var(--ink),3px 3px 0 #2f8f80,4px 4px 0 #2f8f80,5px 5px 0 var(--ink);margin:0;font-weight:400;line-height:1}
+.led{width:12px;height:12px;border-radius:999px;background:var(--green);box-shadow:0 0 8px var(--green)}
+.led.off{background:#5b5560;box-shadow:none}
+
+/* console */
+.console{background:var(--black);border:3px solid var(--ink);border-radius:12px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 0 var(--ink)}
+.hd{font-style:italic;font-weight:800;font-size:15px;letter-spacing:.5px;color:var(--black);-webkit-text-stroke:1px var(--key);text-align:center;margin:0}
+.tags{display:flex;justify-content:center;gap:6px}
+.tag{font-weight:700;font-size:11px;letter-spacing:1px;border:1.5px solid var(--key);border-radius:999px;padding:1px 8px;color:var(--key)}
+.strip{display:flex;align-items:center;gap:8px}
+.strip .lines{flex:1;height:7px;border-top:1.5px solid #6d6670;border-bottom:1.5px solid #6d6670}
+.strip .lab{font-family:var(--f-lcd);font-size:14px;letter-spacing:1.5px;color:var(--key)}
+
+.screen{position:relative;overflow:hidden;border-radius:4px;background:var(--lcd);background-image:radial-gradient(rgba(31,27,36,.18) 1px,transparent 1.3px);background-size:4px 4px;
+  padding:30px 12px 14px;min-height:290px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:background-color .3s}
+.screen.dim{background-color:#6b6370;background-image:radial-gradient(rgba(0,0,0,.3) 1px,transparent 1.3px)}
+.chipL{position:absolute;left:10px;top:8px;font-family:var(--f-x);font-size:13px;color:var(--paper);-webkit-text-stroke:1px var(--ink);paint-order:stroke fill;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chipL i{color:var(--pink);font-family:var(--f-body);font-weight:800}
+.chipR{position:absolute;right:10px;top:6px;font-family:var(--f-px);font-size:17px;padding:0 6px;border-radius:3px;line-height:1.2}
+.chipR.air{background:var(--red);color:var(--paper)}
+.chipR.paused{background:var(--yellow);color:var(--ink)}
+.chipR.air::before{content:"● ";animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.ringbox{position:relative;width:186px;height:186px;transition:opacity .3s}
+.ringbox svg{display:block;width:100%;height:100%}
+.ringbox .seg{transition:stroke-dasharray 1s cubic-bezier(.3,1.15,.5,1)}
+.ringbox .badge circle{transition:fill .4s}
+.dim .ringbox{opacity:.35}
+.ringc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ringc b{font-family:var(--f-lcd);font-weight:400;font-size:40px;line-height:1}
+.ringc span{font-family:var(--f-px);font-size:17px}
+.lvl{font-family:var(--f-px);font-size:20px;background:var(--ink);color:var(--yellow);padding:0 10px;border-radius:3px;text-align:center}
+.vu{display:flex;align-items:flex-end;gap:4px;height:30px}
+.vu i{width:8px;border:1.5px solid var(--ink);border-radius:2px;height:30px;transform-origin:bottom;animation:vu .6s ease-in-out infinite alternate}
+@keyframes vu{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.stamp{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}
+.pxchip{font-family:var(--f-px);font-size:20px;background:var(--ink);color:var(--paper);padding:0 10px;border-radius:3px}
+
+/* extruded type */
+.ex{font-family:var(--f-x);font-weight:400;line-height:.9;text-transform:uppercase;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;text-align:center;display:block}
+.ey{color:var(--yellow);text-shadow:3px 3px 0 var(--ink),4px 4px 0 var(--pink),6px 6px 0 var(--pink),8px 8px 0 var(--pink),9px 9px 0 var(--ink),10px 10px 0 var(--ink)}
+.eyt{color:var(--yellow);text-shadow:3px 3px 0 var(--ink),4px 4px 0 var(--teal),6px 6px 0 var(--teal),8px 8px 0 var(--teal),9px 9px 0 var(--ink),10px 10px 0 var(--ink)}
+.ec{color:#fbe3b4;text-shadow:2px 2px 0 var(--ink),3px 3px 0 #2f8f80,4px 4px 0 #2f8f80,5px 5px 0 #2f8f80,6px 6px 0 var(--ink),7px 7px 0 var(--ink)}
+.ep{color:#f3a8d7;text-shadow:2px 2px 0 var(--ink),3px 3px 0 #2f8f80,4px 4px 0 #2f8f80,5px 5px 0 #2f8f80,6px 6px 0 var(--ink),7px 7px 0 var(--ink)}
+.et{color:var(--teal);text-shadow:2px 2px 0 var(--ink),3px 3px 0 #b8649e,4px 4px 0 #b8649e,5px 5px 0 #b8649e,6px 6px 0 var(--ink),7px 7px 0 var(--ink)}
+
+/* takeover */
+.take{min-height:420px;padding:26px 12px 26px;gap:14px}
+.take .rays{position:absolute;left:50%;top:50%;width:760px;height:760px;margin:-380px 0 0 -380px;border-radius:999px;animation:spin 24s linear infinite}
+.take .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(31,27,36,.14) 1px,transparent 1.3px);background-size:4px 4px}
+.take > *:not(.rays):not(.dots):not(.deco):not(.chipR){position:relative}
+.deco{position:absolute}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pop-in{animation:popin .55s cubic-bezier(.3,1.6,.5,1) both}
+.pop-in.d1{animation-delay:.08s}.pop-in.d2{animation-delay:.18s}.pop-in.d3{animation-delay:.3s}
+@keyframes popin{from{opacity:0;transform:scale(.4) rotate(-10deg)}to{opacity:1}}
+.tilt{transform:rotate(-4deg)}
+
+/* panels */
+.picker{justify-content:space-between;padding:12px 16px;font-size:22px;background:#c9c1bb;width:100%;min-height:52px}
+.picker .dot{width:14px;height:14px;border-radius:999px;border:2px solid var(--ink);flex:none}
+.picker > span{display:flex;align-items:center;gap:10px;min-width:0}
+.picker .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 80px;gap:12px}
+.readout{border:2.5px solid var(--ink);border-radius:9px;background:var(--case-2);padding:10px 14px 12px;box-shadow:0 4px 0 var(--ink);display:flex;flex-direction:column;gap:2px;min-width:0}
+.readout .t{font-weight:700;font-size:17px;overflow-wrap:anywhere}
+.readout .s{font-size:19px;line-height:1.1}
+.readout .rule{height:2px;background:#8d8580;margin:6px 0}
+.readout .clock{font-family:var(--f-lcd);font-size:44px;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.readout .clock.grey{color:#6d6670}
+.linkish{align-self:flex-start;background:none;border:0;padding:6px 0 0;font-family:var(--f-px);font-size:18px;text-decoration:underline;cursor:pointer;color:var(--ink)}
+.side{display:flex;flex-direction:column;gap:12px}
+.side .k{flex:1;flex-direction:column;gap:2px;min-height:58px}
+.bank{background:var(--yellow)}
+.bank.nudge{outline:3px dashed var(--ink);outline-offset:3px}
+.transport{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px}
+.seg2{display:grid;grid-template-columns:1fr 1fr;border:2.5px solid var(--ink);border-radius:9px;overflow:hidden;box-shadow:0 4px 0 var(--ink)}
+.seg2 button{border:0;height:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;box-shadow:inset 0 -6px 0 rgba(31,27,36,.18);transition:transform .07s;font-family:var(--f-px);font-size:17px}
+.seg2 button:first-child{border-right:2.5px solid var(--ink)}
+.seg2 button:active:not(:disabled){box-shadow:inset 0 5px 0 rgba(31,27,36,.25)}
+.seg2 button.pressed{box-shadow:inset 0 6px 0 rgba(31,27,36,.3);padding-top:5px}
+.seg2 button:disabled{cursor:not-allowed}
+.grille{border-radius:10px;background-image:radial-gradient(var(--ink) 2.2px,transparent 2.6px);background-size:9px 9px;display:flex;align-items:center;justify-content:center}
+.grille span{background:var(--case);padding:2px 6px;font-weight:700;font-size:11px;line-height:1.05;text-align:center;letter-spacing:.5px}
+
+.summary{border:2.5px solid var(--ink);border-radius:9px;background:var(--case-2);padding:12px 14px 14px;box-shadow:0 4px 0 var(--ink);display:flex;flex-direction:column;gap:8px}
+.summary .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.summary .t{font-weight:700;font-size:17px;min-width:0;overflow-wrap:anywhere}
+.segs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.segs > span{height:14px;border:2px solid var(--ink);border-radius:3px;background:var(--paper);overflow:hidden;display:block}
+.segs > span > i{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.3,1.1,.5,1)}
+.path{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding-top:2px}
+.path .track{position:absolute;left:25px;right:25px;top:22px;height:10px;background:var(--paper);border:2.5px solid var(--ink);border-radius:999px}
+.path .fill{position:absolute;left:25px;top:22px;height:10px;background:var(--yellow);border:2.5px solid var(--ink);border-radius:999px;transition:width 1s .3s cubic-bezier(.3,1.1,.5,1)}
+.node{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+.node b{width:50px;height:50px;border:3px solid var(--ink);border-radius:999px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 var(--ink);font-family:var(--f-x);font-weight:400;font-size:19px;background:var(--paper)}
+.node.got b{background:var(--yellow)}
+.node.now b{background:var(--pink);transform:scale(1.15)}
+.node span{font-family:var(--f-px);font-size:17px}
+.keys2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+
+/* missions */
+.list{display:flex;flex-direction:column;gap:14px}
+.mrow{justify-content:flex-start;gap:12px;padding:12px 14px 14px 12px;width:100%;text-align:left}
+.mrow.on{background:#d9d1cb}
+.mrow .ic{width:46px;height:46px;border:2.5px solid var(--ink);border-radius:999px;display:flex;align-items:center;justify-content:center;flex:none}
+.mrow .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mrow .top1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mrow .nm{font-weight:700;font-size:18px;overflow-wrap:anywhere}
+.mini{font-family:var(--f-px);font-size:16px;padding:0 5px;border-radius:3px;margin-left:4px;vertical-align:2px;white-space:nowrap}
+.mini.load{background:var(--ink);color:var(--green)}
+.mini.ex{background:var(--paper);border:1.5px solid var(--ink)}
+.addrow{height:64px;border-style:dashed;background:#bdb4ae;box-shadow:none;font-weight:700;font-size:17px;width:100%}
+.mwrap{display:grid;grid-template-columns:minmax(0,1fr) 66px;gap:10px;align-items:stretch}
+.mdel{flex-direction:column;gap:3px;background:var(--key);padding:6px 4px}
+.mdel .px{font-size:16px;line-height:1}
+.mdel.sure{background:var(--red);color:var(--paper)}
+.mdel.sure svg{stroke:#fff6e2}
+.notice{border:2.5px solid var(--ink);border-radius:9px;background:var(--cream);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.notice p{margin:0;font-family:var(--f-px);font-size:20px;line-height:1.1}
+.notice .k{height:46px;background:var(--paper);font-weight:700;font-size:15px}
+
+/* tabs */
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:auto calc(-1 * max(14px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(14px,env(safe-area-inset-left,0px)))}
+.tab{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px calc(14px + env(safe-area-inset-bottom,0px));border:2.5px solid var(--ink);border-bottom:0;background:#bdb4ae;font-family:var(--f-px);font-size:21px;cursor:pointer}
+.tab:first-child{border-right:0}
+.tab[aria-current="page"]{background:#d2cac4}
+.spacer{height:4px}
+
+/* sheet */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(31,27,36,.55);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;
+  padding:max(40px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.sheet{width:100%;max-width:400px;background:var(--cream);border:2.5px solid var(--ink);border-radius:10px;padding:22px 18px 20px;display:flex;flex-direction:column;gap:16px;box-shadow:0 6px 0 var(--ink);animation:popin .3s cubic-bezier(.3,1.4,.5,1)}
+.sheet h2{margin:0;font-family:var(--f-serif);font-weight:700;font-size:28px;line-height:1.05}
+.sheet .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.x{border:0;background:none;cursor:pointer;padding:6px;flex:none}
+.flab{font-family:var(--f-px);font-size:20px;display:block;margin-bottom:6px}
+.sheet input[type=text]{width:100%;font-family:var(--f-body);font-weight:700;font-size:19px;padding:12px 14px;border:2.5px solid var(--ink);border-radius:9px;background:#fff;color:var(--ink);box-shadow:inset 0 3px 0 rgba(31,27,36,.12)}
+.icons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.icons .k{height:48px;background:var(--cream)}
+.icons .k[aria-pressed="true"]{background:var(--peri);transform:translateY(3px);box-shadow:inset 0 5px 0 rgba(31,27,36,.25),0 1px 0 var(--ink)}
+.cols{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.cols button{height:42px;border:2.5px solid var(--ink);border-radius:999px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.cols button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--cream),0 0 0 5.5px var(--ink)}
+.sheet .k.go{background:var(--teal-lt);height:54px;font-weight:700;font-size:17px}
+.sheet .k.plain{background:var(--cream);height:54px;font-weight:700;font-size:17px}
+.danger{align-self:flex-start;background:none;border:0;font-family:var(--f-px);font-size:19px;text-decoration:underline;color:#9b2335;cursor:pointer;padding:2px 0}
+.err{font-family:var(--f-px);font-size:18px;color:#9b2335;margin:6px 0 0}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.setrow .px{font-size:21px}
+.toggle{display:grid;grid-template-columns:1fr 1fr;border:2.5px solid var(--ink);border-radius:9px;overflow:hidden;box-shadow:0 3px 0 var(--ink)}
+.toggle button{border:0;padding:8px 14px;background:var(--cream);cursor:pointer;font-weight:700}
+.toggle button:first-child{border-right:2.5px solid var(--ink)}
+.toggle button[aria-pressed="true"]{background:var(--teal-lt);box-shadow:inset 0 4px 0 rgba(31,27,36,.18)}
+.note{font-family:var(--f-px);font-size:18px;line-height:1.15;margin:0;color:#3d3742}
+
+.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--paper);font-family:var(--f-px);font-size:20px;padding:6px 14px;border-radius:6px;max-width:calc(100vw - 32px);text-align:center;animation:popin .25s ease-out}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <button type="button" class="k" id="btnSettings" aria-label="Settings" style="width:48px;height:48px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></button>
+    <h1 class="logo">20 HOURS</h1>
+    <button type="button" class="k" id="btnSound" style="width:72px;height:48px;background:#2a2433" aria-pressed="true" aria-label="Sound on. Tap to mute."><svg id="sndIco" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cfc7c1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"></path><path id="sndWave" d="M16.5 8.5a5 5 0 0 1 0 7"></path></svg><span class="led" id="sndLed"></span></button>
+  </header>
+
+  <!-- TIMER VIEW -->
+  <section id="viewTimer" style="display:flex;flex-direction:column;gap:14px" aria-label="Timer">
+    <div class="console">
+      <p class="hd" id="dispHead">HIGH QUALITY ULTRA FOCUS TIME</p>
+      <div class="tags" aria-hidden="true"><span class="tag">DIGITAL</span><span class="tag" style="background:#cfc7c1;color:#141118">20H</span><span class="tag" style="border-color:transparent">MASTERY Pro</span></div>
+
+      <div class="screen" id="screen">
+        <span class="chipL" id="chName">GUITAR <i>fm</i></span>
+        <span class="chipR" id="chState">STANDBY</span>
+        <div class="ringbox" id="ringBox">
+          <svg viewBox="0 0 240 240" role="img" id="ringSvg" aria-label="">
+            <circle cx="120" cy="120" r="114" fill="#fff6e2" stroke="#1f1b24" stroke-width="5"></circle>
+            <circle cx="120" cy="120" r="96" fill="none" stroke="#cfcad6" stroke-width="24"></circle>
+            <g transform="rotate(-90 120 120)" fill="none" stroke-width="24">
+              <circle class="seg" id="seg0" cx="120" cy="120" r="96" stroke="#f6c94a" style="stroke-dasharray:0 603.19;stroke-dashoffset:0"></circle>
+              <circle class="seg" id="seg1" cx="120" cy="120" r="96" stroke="#e18fc7" style="stroke-dasharray:0 603.19;stroke-dashoffset:-150.8"></circle>
+              <circle class="seg" id="seg2" cx="120" cy="120" r="96" stroke="#62c7b5" style="stroke-dasharray:0 603.19;stroke-dashoffset:-301.6"></circle>
+              <circle class="seg" id="seg3" cx="120" cy="120" r="96" stroke="#8fa3e8" style="stroke-dasharray:0 603.19;stroke-dashoffset:-452.4"></circle>
+              <circle id="segP" cx="120" cy="120" r="96" stroke="#1f1b24" stroke-opacity=".28" style="stroke-dasharray:0 603.19"></circle>
+            </g>
+            <circle cx="120" cy="120" r="108" fill="none" stroke="#1f1b24" stroke-width="3"></circle>
+            <circle cx="120" cy="120" r="84" fill="none" stroke="#1f1b24" stroke-width="4"></circle>
+            <g class="badge" id="b0" transform="translate(216 120)"><circle r="17" fill="#fff6e2" stroke="#1f1b24" stroke-width="4"></circle><path d="M0-9l2.7 5.8 6.3.7-4.7 4.3 1.3 6.3L0 5-5.6 8.1l1.3-6.3L-9-2.5l6.3-.7z" fill="#cfcad6" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path></g>
+            <g class="badge" id="b1" transform="translate(120 216)"><circle r="17" fill="#fff6e2" stroke="#1f1b24" stroke-width="4"></circle><path d="M0-9l2.7 5.8 6.3.7-4.7 4.3 1.3 6.3L0 5-5.6 8.1l1.3-6.3L-9-2.5l6.3-.7z" fill="#cfcad6" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path></g>
+            <g class="badge" id="b2" transform="translate(24 120)"><circle r="17" fill="#fff6e2" stroke="#1f1b24" stroke-width="4"></circle><path d="M0-9l2.7 5.8 6.3.7-4.7 4.3 1.3 6.3L0 5-5.6 8.1l1.3-6.3L-9-2.5l6.3-.7z" fill="#cfcad6" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path></g>
+            <g class="badge" id="b3" transform="translate(120 24)"><circle r="17" fill="#fff6e2" stroke="#1f1b24" stroke-width="4"></circle><path d="M-6-7h12v4a6 6 0 0 1-12 0zM-2 3h4v3h3v3h-10v-3h3z" fill="#cfcad6" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path></g>
+          </svg>
+          <div class="ringc"><b id="ringHours">0H 00M</b><span id="ringSub">of 20 hours</span></div>
+        </div>
+        <div class="stamp" id="stamp" hidden><span class="ex ey tilt" style="font-size:46px">TAKING<br>FIVE?</span><span class="pxchip" id="stampSub"></span></div>
+        <div class="lvl" id="lvlLine"></div>
+        <div class="vu" id="vu" hidden aria-hidden="true"></div>
+        <div id="emptyScr" hidden style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+          <span class="ex ec tilt" style="font-size:40px">NO MISSION<br>LOADED</span>
+          <span class="px" style="font-size:21px;max-width:24ch">Pick something you want to learn. Twenty hours. Four stars.</span>
+        </div>
+      </div>
+
+      <div class="screen take" id="take" hidden></div>
+
+      <div class="strip" aria-hidden="true"><span class="lines"></span><span class="lab">SLOW &amp; STEADY PROTECTION</span><span class="tag">20H SOUND</span></div>
+    </div>
+
+    <div id="ctrls" style="display:flex;flex-direction:column;gap:14px">
+      <button type="button" class="k picker px" id="btnPicker"><span><span class="dot" id="pkDot"></span><span class="nm" id="pkName">Mission: Guitar</span></span><span id="pkIco"></span></button>
+      <div class="row2">
+        <div class="readout">
+          <span class="t" id="roT">Ready when you are</span>
+          <span class="s px" id="roS">Got a minute? That counts.</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span class="clock" id="clock" aria-live="off">00:00</span>
+          <button type="button" class="linkish" id="btnDiscard" hidden>Discard this session</button>
+        </div>
+        <div class="side">
+          <button type="button" class="k bank" id="btnBank" aria-label="Bank your time"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v5a6 6 0 0 1-12 0zM10 14h4v3h3v4H7v-4h3z" fill="#fff6e2" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path></svg><span class="px" style="font-size:17px">BANK</span></button>
+          <button type="button" class="k" id="btnEdit" aria-label="Edit this mission"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"></path></svg></button>
+        </div>
+      </div>
+      <div class="transport">
+        <div class="seg2">
+          <button type="button" id="btnPlay" style="background:#e18fc7"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l15 9-15 9z" fill="#1f1b24"></path></svg><span id="playLab">LET'S GO</span></button>
+          <button type="button" id="btnPause" style="background:#cfc7c1"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" fill="#1f1b24"></rect><rect x="14" y="4" width="5" height="16" fill="#1f1b24"></rect></svg><span id="pauseLab">TAKE 5?</span></button>
+        </div>
+        <div class="grille" aria-hidden="true"><span>DYNAMIC<br>FOCUS</span></div>
+      </div>
+    </div>
+
+    <div id="takePanel" hidden style="display:flex;flex-direction:column;gap:14px"></div>
+  </section>
+
+  <!-- MISSIONS VIEW -->
+  <section id="viewMissions" hidden style="flex-direction:column;gap:14px" aria-label="Missions">
+    <div class="console" style="gap:8px">
+      <p class="hd">SELECT YOUR MISSION</p>
+      <div class="px" id="msHead" style="background:#e9dcc7;border-radius:4px;padding:8px 12px;font-size:20px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div id="exNotice" class="notice" hidden>
+      <p>These three are examples so you can see how it works. Clear them when you're ready to start your own.</p>
+      <button type="button" class="k" id="btnClearEx">Clear examples</button>
+    </div>
+    <div class="list" id="mList"></div>
+  </section>
+
+  <div class="spacer"></div>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <button type="button" class="tab" id="tabTimer" aria-current="page"><svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" fill="#fff6e2" stroke="#1f1b24" stroke-width="2"></circle><path d="M12 13V8M9 3h6" stroke="#1f1b24" stroke-width="2.4" stroke-linecap="round"></path><path d="M12 13l4 2" stroke="#e18fc7" stroke-width="2.4" stroke-linecap="round"></path></svg>Timer</button>
+    <button type="button" class="tab" id="tabMissions"><svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5z" fill="#62c7b5" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"></path><rect x="8" y="8" width="8" height="7" fill="#fff6e2" stroke="#1f1b24" stroke-width="1.6"></rect></svg>Missions</button>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div id="live" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+
+<script>
+(() => {
+"use strict";
+const GOAL = 20 * 3600, LEVEL = 5 * 3600, C = 2 * Math.PI * 96, Q = C / 4;
+const RM = matchMedia("(prefers-reduced-motion: reduce)");
+const COLORS = ["#e18fc7", "#62c7b5", "#f6c94a", "#8fa3e8", "#f39a5b"];
+const COLOR_NAMES = { "#e18fc7": "Pink", "#62c7b5": "Teal", "#f6c94a": "Yellow", "#8fa3e8": "Periwinkle", "#f39a5b": "Orange" };
+const ICONS = {
+  music: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  chat: '<path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+  pencil: '<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',
+  code: '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/>',
+  camera: '<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/>',
+  ball: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  page: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7"/>',
+  pan: '<path d="M3 11h14v4a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5zM17 13h4"/><path d="M8 4v3M12 4v3"/>'
+};
+const ICON_NAMES = { music: "Music", chat: "Language", pencil: "Drawing", code: "Code", camera: "Camera", ball: "Sport", page: "Writing", pan: "Cooking" };
+const STAR = "M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z";
+const TROPHY = "M6 3h12v5a6 6 0 0 1-12 0zM10 14h4v3h3v4H7v-4h3zM6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3";
+const CHEERS = ["LOOK AT YOU GO!", "ANOTHER STEP CLOSER!", "NICE ONE!", "KEEP IT UP!", "THAT ALL COUNTS!"];
+const SQUIG = (c) => '<svg width="70" height="20" viewBox="0 0 80 22"><path d="M4 11q6-8 12 0t12 0 12 0 12 0 12 0 12 0" fill="none" stroke="#1f1b24" stroke-width="8" stroke-linecap="round"/><path d="M4 11q6-8 12 0t12 0 12 0 12 0 12 0 12 0" fill="none" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/></svg>';
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ico = (k, s = 22) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[k] || ICONS.music) + "</svg>";
+const pad = (n) => String(n).padStart(2, "0");
+const fmtHM = (s) => { s = Math.max(0, Math.floor(s)); if (s < 3600) return Math.floor(s / 60) + "m " + pad(s % 60) + "s"; return Math.floor(s / 3600) + "h " + pad(Math.floor((s % 3600) / 60)) + "m"; };
+const fmtClock = (s) => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return (h ? h + ":" + pad(m) : pad(m)) + ":" + pad(x); };
+const fmtLeft = (s) => { const mins = Math.max(1, Math.ceil(s / 60)); const h = Math.floor(mins / 60), m = mins % 60; return h ? (m ? h + "h " + m + "m" : h + "h") : m + "m"; };
+const levelOf = (s) => Math.min(4, Math.floor(s / LEVEL));
+const reduced = () => RM.matches;
+const uid = () => "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const fmtDate = (t) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+/* ---------- state ---------- */
+function defaults() {
+  const now = Date.now(), day = 864e5;
+  return {
+    v: 1, updatedAt: 0, muted: false, active: "ex1", run: null, examples: true,
+    missions: [
+      { id: "ex1", name: "Guitar", icon: "music", color: "#e18fc7", secs: 6 * 3600 + 42 * 60, sessions: 11, createdAt: now - 24 * day, example: true },
+      { id: "ex2", name: "Spanish", icon: "chat", color: "#62c7b5", secs: 2 * 3600 + 15 * 60, sessions: 6, createdAt: now - 9 * day, example: true },
+      { id: "ex3", name: "Drawing", icon: "pencil", color: "#f6c94a", secs: 14 * 3600 + 5 * 60, sessions: 38, createdAt: now - 51 * day, example: true }
+    ]
+  };
+}
+function normalize(d) {
+  const s = Object.assign(defaults(), JSON.parse(JSON.stringify(d || {})));
+  if (!Array.isArray(s.missions)) s.missions = [];
+  s.missions = s.missions.filter((m) => m && typeof m.id === "string").map((m) => ({
+    id: m.id, name: String(m.name || "Mission").slice(0, 28), icon: ICONS[m.icon] ? m.icon : "music",
+    color: COLORS.includes(m.color) ? m.color : COLORS[0], secs: Math.max(0, +m.secs || 0),
+    sessions: Math.max(0, +m.sessions || 0), createdAt: +m.createdAt || Date.now(), example: !!m.example
+  }));
+  if (s.run && !s.missions.some((m) => m.id === s.run.id)) s.run = null;
+  if (!s.missions.some((m) => m.id === s.active)) s.active = s.missions[0] ? s.missions[0].id : null;
+  return s;
+}
+const LSK = "20h-mastery-v1";
+let S;
+try { S = normalize(JSON.parse(localStorage.getItem(LSK))); } catch (e) { S = normalize(null); }
+let persisted = false;
+function save() {
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(LSK, JSON.stringify(S)); } catch (e) { toast("Couldn't save on this device. Is private browsing on?"); }
+}
+async function initStore() {
+  try { if (navigator.storage && navigator.storage.persist) persisted = (await navigator.storage.persisted()) || (await navigator.storage.persist()); } catch (e) {}
+  window.addEventListener("storage", (e) => {
+    if (e.key !== LSK || !e.newValue) return;
+    try { S = normalize(JSON.parse(e.newValue)); if (!take) render(); } catch (err) {}
+  });
+}
+
+/* ---------- backup & restore ---------- */
+function backupText() { return JSON.stringify({ app: "20-hours-to-mastery", format: 1, exportedAt: new Date().toISOString(), state: S }, null, 2); }
+async function doBackup() {
+  const name = "20-hours-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  const blob = new Blob([backupText()], { type: "application/json" });
+  const done = (msg) => { S.lastBackup = Date.now(); save(); toast(msg); };
+  try {
+    const f = new File([blob], name, { type: "application/json" });
+    if (/iPhone|iPad|Android/i.test(navigator.userAgent) && navigator.canShare && navigator.canShare({ files: [f] })) {
+      await navigator.share({ files: [f], title: "20 Hours backup" }); done("Backup saved."); return;
+    }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  done("Backup downloaded: " + name);
+}
+function readBackup(text) {
+  const d = JSON.parse(text);
+  const st = d && d.state ? d.state : d;
+  if (!st || !Array.isArray(st.missions)) throw new Error("not a backup");
+  return normalize(st);
+}
+
+const mission = () => S.missions.find((m) => m.id === S.active) || null;
+const runMission = () => (S.run ? S.missions.find((m) => m.id === S.run.id) : null);
+const elapsed = () => (!S.run ? 0 : S.run.carry + (S.run.start ? Math.max(0, (Date.now() - S.run.start) / 1000) : 0));
+const isRunning = () => !!(S.run && S.run.start);
+
+/* ---------- sound (original chip tones) ---------- */
+let ac = null;
+function tone(f, t0, dur, type = "square", vol = 0.07) {
+  if (S.muted) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { return; }
+  const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + 0.03);
+}
+const sfx = {
+  click() { tone(880, 0, 0.04, "square", 0.04); },
+  start() { [392, 523, 659, 784].forEach((f, i) => tone(f, i * 0.06, 0.1)); },
+  pause() { [659, 494].forEach((f, i) => tone(f, i * 0.09, 0.14, "triangle", 0.1)); },
+  bank() { [988, 1319].forEach((f, i) => tone(f, i * 0.07, 0.12)); [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.18 + i * 0.05, 0.12, "square", 0.05)); tone(2093, 0.42, 0.3, "triangle", 0.06); },
+  level() { const n = [523, 659, 784, 1047, 784, 1047, 1319]; n.forEach((f, i) => { tone(f, i * 0.1, 0.16); tone(f / 2, i * 0.1, 0.16, "triangle", 0.05); }); },
+  done() { const m = [523, 523, 523, 659, 784, 659, 784, 1047, 1047], d = [0.11, 0.11, 0.11, 0.28, 0.11, 0.11, 0.11, 0.2, 0.55]; let t = 0; m.forEach((f, i) => { tone(f, t, d[i] * 0.95); tone(f / 2, t, d[i] * 0.95, "triangle", 0.06); t += d[i]; }); }
+};
+
+/* ---------- confetti ---------- */
+const cv = $("confetti"), cx = cv.getContext("2d");
+let parts = [], raf = 0;
+function confetti(n) {
+  if (reduced()) return;
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  const r = $("take").getBoundingClientRect();
+  const ox = (r.left + r.width / 2) * dpr, oy = (r.top + r.height * 0.45) * dpr;
+  const cols = ["#f6c94a", "#e18fc7", "#62c7b5", "#8fa3e8", "#fff6e2", "#f39a5b"];
+  for (let i = 0; i < n; i++) parts.push({ x: ox, y: oy, vx: (Math.random() - 0.5) * 24 * dpr, vy: (-Math.random() * 20 - 6) * dpr, s: (6 + Math.random() * 8) * dpr, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, c: cols[i % cols.length], k: i % 3, life: 0, dpr });
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+function tick() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  for (const p of parts) {
+    p.vy += 0.65 * p.dpr; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.strokeStyle = "#1f1b24"; cx.lineWidth = 1.6 * p.dpr;
+    if (p.k === 0) { cx.beginPath(); for (let j = 0; j < 10; j++) { const a = (j * Math.PI) / 5, rr = j % 2 ? p.s * 0.45 : p.s; cx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } cx.closePath(); cx.fill(); cx.stroke(); }
+    else if (p.k === 1) { cx.beginPath(); cx.roundRect ? cx.roundRect(-p.s / 2, -p.s / 4, p.s, p.s / 2, p.s / 4) : cx.rect(-p.s / 2, -p.s / 4, p.s, p.s / 2); cx.fill(); cx.stroke(); }
+    else { cx.beginPath(); cx.arc(0, 0, p.s / 3, 0, Math.PI * 2); cx.fill(); cx.stroke(); }
+    cx.restore();
+  }
+  parts = parts.filter((p) => p.y < cv.height + 40 && p.life < 220);
+  raf = parts.length ? requestAnimationFrame(tick) : (cx.clearRect(0, 0, cv.width, cv.height), 0);
+}
+
+/* ---------- ring ---------- */
+let ringShown = null;
+function setRing(secs, pending) {
+  const s = Math.min(secs, GOAL);
+  for (let i = 0; i < 4; i++) {
+    const len = (Math.max(0, Math.min(LEVEL, s - i * LEVEL)) / GOAL) * C;
+    $("seg" + i).style.strokeDasharray = len.toFixed(2) + " " + C.toFixed(2);
+  }
+  const p = Math.max(0, Math.min(pending, GOAL - s));
+  const sp = $("segP");
+  sp.style.strokeDasharray = ((p / GOAL) * C).toFixed(2) + " " + C.toFixed(2);
+  sp.style.strokeDashoffset = (-(s / GOAL) * C).toFixed(2);
+  const lvl = levelOf(secs);
+  for (let i = 0; i < 4; i++) {
+    const g = $("b" + i), got = i < lvl;
+    g.children[0].setAttribute("fill", got ? (i === 3 ? "#e18fc7" : "#f6c94a") : "#fff6e2");
+    g.children[1].setAttribute("fill", got ? "#fff6e2" : "#cfcad6");
+  }
+  ringShown = secs;
+}
+
+/* ---------- views ---------- */
+let view = "timer";
+let take = null, queue = [];
+function lvlText(secs) {
+  const l = levelOf(secs);
+  if (l >= 4) return "MISSION COMPLETE · 20 HOURS BANKED";
+  const stars = l ? "★".repeat(l) + " LEVEL " + l + " · " : "";
+  const left = fmtLeft((l + 1) * LEVEL - secs);
+  return stars + left + (l === 3 ? " to the trophy" : l === 0 ? " to first star" : " to next star");
+}
+function render() {
+  $("viewTimer").hidden = view !== "timer";
+  $("viewMissions").hidden = view !== "missions";
+  $("viewMissions").style.display = view === "missions" ? "flex" : "none";
+  $("viewTimer").style.display = view === "timer" ? "flex" : "none";
+  $("tabTimer").setAttribute("aria-current", view === "timer" ? "page" : "false");
+  $("tabMissions").setAttribute("aria-current", view === "missions" ? "page" : "false");
+  $("tabs").hidden = !!take;
+  $("tabs").style.display = take ? "none" : "grid";
+  renderSound();
+  if (view === "missions") renderMissions();
+  else renderTimer();
+}
+function renderSound() {
+  const b = $("btnSound");
+  b.setAttribute("aria-pressed", String(!S.muted));
+  b.setAttribute("aria-label", S.muted ? "Sound off. Tap to turn on." : "Sound on. Tap to mute.");
+  $("sndLed").classList.toggle("off", S.muted);
+  $("sndWave").setAttribute("d", S.muted ? "M16 9l5 6M21 9l-5 6" : "M16.5 8.5a5 5 0 0 1 0 7");
+}
+function renderTimer() {
+  const showTake = !!take;
+  $("screen").hidden = showTake; $("take").hidden = !showTake;
+  $("ctrls").hidden = showTake; $("ctrls").style.display = showTake ? "none" : "flex";
+  $("takePanel").hidden = !showTake; $("takePanel").style.display = showTake ? "flex" : "none";
+  if (showTake) return;
+  $("dispHead").textContent = "HIGH QUALITY ULTRA FOCUS TIME";
+
+  const m = mission(), e = elapsed(), running = isRunning(), paused = !!S.run && !running;
+  const empty = !m;
+  $("ringBox").hidden = empty; $("lvlLine").hidden = empty; $("emptyScr").hidden = !empty;
+  $("emptyScr").style.display = empty ? "flex" : "none";
+  $("chName").hidden = empty;
+  $("screen").classList.toggle("dim", paused);
+  $("stamp").hidden = !paused;
+  $("vu").hidden = !running;
+
+  const st = $("chState");
+  st.className = "chipR" + (running ? " air" : paused ? " paused" : "");
+  st.textContent = running ? "ON AIR" : paused ? "II PAUSED" : empty ? "NO SIGNAL" : "STANDBY";
+
+  // picker
+  const pk = $("btnPicker");
+  if (empty) {
+    $("pkDot").style.background = "#cfc7c1"; $("pkName").textContent = "Insert a mission";
+    $("pkIco").innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+    pk.disabled = false;
+  } else {
+    $("pkDot").style.background = m.color; $("pkName").textContent = "Mission: " + m.name;
+    $("pkIco").innerHTML = S.run ? '<svg width="14" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>' : '<svg width="12" height="8" viewBox="0 0 12 8" aria-hidden="true"><path d="M0 0h12L6 8z" fill="#1f1b24"/></svg>';
+    pk.setAttribute("aria-label", S.run ? "Mission: " + m.name + ". Locked while a session is open." : "Mission: " + m.name + ". Change mission.");
+  }
+
+  if (!empty) {
+    $("chName").innerHTML = esc(m.name.toUpperCase()) + " <i>fm</i>";
+    setRing(holdRing !== null ? holdRing : m.secs, S.run ? e : 0);
+    const short = e < 60 ? Math.floor(e) + "s" : e < 3600 ? Math.floor(e / 60) + "m" : Math.floor(e / 3600) + "h " + pad(Math.floor((e % 3600) / 60)) + "m";
+    $("ringHours").textContent = fmtHM(m.secs).toUpperCase();
+    $("ringSub").textContent = S.run ? "+" + short + (running ? " cooking" : " waiting") : levelOf(m.secs) >= 4 ? "all 20 hours!" : "of 20 hours";
+    $("ringSvg").setAttribute("aria-label", m.name + ": " + fmtHM(m.secs) + " of 20 hours banked");
+    $("lvlLine").textContent = lvlText(m.secs);
+    $("stampSub").textContent = fmtClock(e) + " safe · not banked yet";
+  }
+
+  // readout
+  $("roT").textContent = empty ? "No mission yet" : running ? "Now playing: " + m.name : paused ? "Taking five" : "Ready when you are";
+  $("roS").textContent = empty ? "Add one to get started." : running ? "Every minute counts." : paused ? "Your time is safe. Bank it or carry on." : "Got a minute? That counts.";
+  $("clock").textContent = fmtClock(e);
+  $("clock").classList.toggle("grey", paused);
+  const dis = $("btnDiscard");
+  dis.hidden = !paused;
+  if (!paused) { dis.dataset.sure = ""; dis.textContent = "Discard this session"; }
+
+  const bank = $("btnBank");
+  bank.disabled = !S.run || e < 1;
+  bank.classList.toggle("nudge", paused && e >= 1);
+  $("btnEdit").disabled = empty || !!S.run;
+
+  // transport
+  const play = $("btnPlay"), pause = $("btnPause");
+  play.disabled = empty;
+  play.classList.toggle("pressed", running);
+  play.style.background = running ? "#c76aa8" : "#e18fc7";
+  $("playLab").textContent = running ? "PLAYING" : paused ? "BACK TO IT" : "LET'S GO";
+  play.setAttribute("aria-label", running ? "Timer running" : paused ? "Back to it: resume the timer" : "Let's go: start the timer");
+  pause.disabled = !running && !paused;
+  pause.classList.toggle("pressed", paused);
+  pause.style.background = paused ? "#8f8782" : running ? "#cfc7c1" : "#a29a95";
+  $("pauseLab").textContent = paused ? "PAUSED" : "TAKE 5?";
+  pause.setAttribute("aria-label", paused ? "Paused" : "Taking five? Pause the timer");
+}
+
+function renderMissions() {
+  const n = S.missions.length;
+  const total = S.missions.reduce((a, m) => a + m.secs, 0);
+  $("msHead").innerHTML = n ? "<span>" + n + (n === 1 ? " mission" : " missions") + " loaded</span><span>" + fmtHM(total) + " practised</span>" : "<span>No missions yet</span><span>Add your first below</span>";
+  $("exNotice").hidden = !S.missions.some((m) => m.example);
+  const rows = S.missions.map((m) => {
+    const segs = [0, 1, 2, 3].map((i) => {
+      const f = Math.max(0, Math.min(1, (m.secs - i * LEVEL) / LEVEL));
+      return '<span><i style="width:' + (f * 100).toFixed(1) + "%;background:" + m.color + '"></i></span>';
+    }).join("");
+    const on = m.id === S.active;
+    const loaded = S.run && S.run.id === m.id ? '<span class="mini load">' + (isRunning() ? "ON AIR" : "PAUSED") + "</span>" : on ? '<span class="mini load">LOADED</span>' : "";
+    const ex = m.example ? '<span class="mini ex">EXAMPLE</span>' : "";
+    return '<div class="mwrap"><button type="button" class="k mrow' + (on ? " on" : "") + '" data-id="' + m.id + '" aria-label="' + esc(m.name) + ", " + fmtHM(m.secs) + ", " + esc(lvlText(m.secs)) + '">' +
+      '<span class="ic" style="background:' + m.color + '">' + ico(m.icon) + "</span>" +
+      '<span class="body"><span class="top1"><span class="nm">' + esc(m.name) + loaded + ex + '</span><span class="px" style="font-size:20px;white-space:nowrap">' + fmtHM(m.secs) + "</span></span>" +
+      '<span class="segs" aria-hidden="true">' + segs + "</span>" +
+      '<span class="px" style="font-size:17px">' + esc(lvlText(m.secs)) + "</span></span></button>" +
+      '<button type="button" class="k mdel" data-del="' + m.id + '" aria-label="Delete ' + esc(m.name) + '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span class="px">DELETE</span></button></div>';
+  }).join("");
+  $("mList").innerHTML = rows + '<button type="button" class="k addrow" id="btnAdd"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New mission</button>';
+}
+
+/* ---------- takeovers ---------- */
+function segBar(color, fromS, toS) {
+  return [0, 1, 2, 3].map((i) => {
+    const a = Math.max(0, Math.min(1, (fromS - i * LEVEL) / LEVEL)), b = Math.max(0, Math.min(1, (toS - i * LEVEL) / LEVEL));
+    return '<span><i data-to="' + (b * 100).toFixed(1) + '" style="width:' + (a * 100).toFixed(1) + "%;background:" + color + '"></i></span>';
+  }).join("");
+}
+function showTake(t) {
+  take = t;
+  const m = S.missions.find((x) => x.id === t.id);
+  if (!m) { take = null; render(); return; }
+  view = "timer";
+  const scr = $("take"), panel = $("takePanel");
+  let head = "", html = "", ph = "";
+  if (t.kind === "bank") {
+    const mins = Math.floor(t.add / 60);
+    let big, small;
+    if (t.add < 60) { big = "+" + Math.max(1, Math.round(t.add)); small = Math.round(t.add) === 1 ? "SECOND!" : "SECONDS!"; }
+    else if (mins < 60) { big = "+" + mins; small = mins === 1 ? "MINUTE!" : "MINUTES!"; }
+    else { big = "+" + Math.floor(mins / 60) + "H"; small = (mins % 60 ? pad(mins % 60) + " MIN " : "") + "BANKED!"; }
+    const cheer = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+    head = "★ TIME BANKED ★";
+    scr.style.background = m.color;
+    html = '<div class="rays" style="background:repeating-conic-gradient(rgba(255,246,226,.28) 0 9deg,transparent 9deg 18deg)"></div><div class="dots"></div>' +
+      '<span class="chipR" style="left:10px;right:auto;background:#1f1b24;color:#fff6e2">' + esc(m.name.toUpperCase()) + " fm</span>" +
+      '<span class="deco" style="left:14px;top:60px;transform:rotate(-18deg)">' + SQUIG("#62c7b5") + "</span>" +
+      '<span class="deco" style="right:22px;top:70px;width:40px;height:15px;border:3px solid #1f1b24;border-radius:999px;background:#f6c94a;transform:rotate(26deg)"></span>' +
+      '<span class="deco" style="right:30px;bottom:40px;width:16px;height:16px;border:3px solid #1f1b24;border-radius:999px;background:#fff6e2"></span>' +
+      '<span class="deco" style="left:24px;bottom:46px;transform:rotate(14deg)">' + SQUIG("#fff6e2") + "</span>" +
+      '<svg class="pop-in" width="60" height="60" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(12deg)"><path d="' + TROPHY + '" fill="#f6c94a" stroke="#1f1b24" stroke-width="1.6" stroke-linejoin="round"/></svg>' +
+      '<div class="tilt"><span class="ex eyt pop-in d1" style="font-size:' + (big.length > 4 ? 96 : 120) + 'px;line-height:.82">' + big + '</span><span class="ex ec pop-in d2" style="font-size:' + (small.length > 9 ? 32 : 44) + 'px;margin-top:8px">' + small + "</span></div>" +
+      '<span class="pxchip pop-in d3" style="font-size:22px;color:#f6c94a">' + cheer + "</span>";
+    const l = levelOf(t.after);
+    const nextLine = l >= 4 ? "All 20 hours banked." : levelOf(t.after) > levelOf(t.before) ? "New level reached!" : fmtLeft((l + 1) * LEVEL - t.after) + (l === 3 ? " to the trophy." : l === 0 ? " to your first star." : " to your next star.");
+    ph = '<div class="summary"><div class="row"><span class="t">' + esc(m.name) + '</span><span class="px" style="font-size:20px;white-space:nowrap">' + fmtHM(t.before) + " → " + fmtHM(t.after) + '</span></div><div class="segs" aria-hidden="true">' + segBar(m.color, t.before, t.after) + '</div><span class="px" style="font-size:19px">Another step closer. ' + nextLine + "</span></div>" +
+      '<button type="button" class="k big" id="btnNice" style="background:#a8e2dc">' + (queue.length ? "Nice! What's next?" : "Nice!") + "</button>";
+    $("live").textContent = "Banked " + fmtHM(t.add) + " into " + m.name + ". Now " + fmtHM(t.after) + ".";
+    sfx.bank(); setTimeout(() => confetti(60), 150);
+  } else if (t.kind === "level") {
+    const L = t.level;
+    head = "★ NEW LEVEL UNLOCKED ★";
+    scr.style.background = "#62c7b5";
+    const stars = Array.from({ length: L }, (_, i) => '<svg class="pop-in d' + (i + 1) + '" width="' + (L === 3 && i === 1 ? 78 : 56) + '" height="' + (L === 3 && i === 1 ? 78 : 56) + '" viewBox="0 0 24 24" aria-hidden="true" style="' + (L === 3 && i === 1 ? "transform:translateY(-12px)" : "") + '"><path d="' + STAR + '" fill="#f6c94a" stroke="#1f1b24" stroke-width="1.7" stroke-linejoin="round"/></svg>').join("");
+    html = '<div class="rays" style="background:repeating-conic-gradient(#7ad3c3 0 9deg,transparent 9deg 18deg)"></div><div class="dots"></div>' +
+      '<span class="chipR" style="left:10px;right:auto;background:#1f1b24;color:#fff6e2">' + esc(m.name.toUpperCase()) + " fm</span>" +
+      '<div style="display:flex;align-items:flex-end">' + stars + "</div>" +
+      '<div class="tilt"><span class="ex ec pop-in d1" style="font-size:46px">LEVEL</span><span class="ex ey pop-in d2" style="font-size:132px;line-height:.82;margin:2px 0 6px">' + L + '</span><span class="ex ep pop-in d3" style="font-size:36px">UNLOCKED!</span></div>';
+    const left = GOAL / 3600 - L * 5;
+    const nodes = [1, 2, 3, 4].map((i) => '<div class="node' + (i < L ? " got" : i === L ? " now" : "") + '"><b>' + (i < 4 ? i : '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="' + TROPHY + '" fill="#cfcad6" stroke="#1f1b24" stroke-width="2" stroke-linejoin="round"/></svg>') + "</b><span>" + i * 5 + "H</span></div>").join("");
+    ph = '<div class="summary"><div style="display:flex;flex-direction:column;gap:2px"><span class="t">' + L * 5 + " hours of " + esc(m.name) + ' banked</span><span class="px" style="font-size:19px">' + left + " more hours to the trophy.</span></div>" +
+      '<div class="path" aria-hidden="true"><span class="track"></span><span class="fill" data-to="calc(' + ((L - 1) / 3) * 100 + '% - ' + ((L - 1) / 3) * 50 + 'px)" style="width:calc(' + ((L - 2 < 0 ? 0 : (L - 2) / 3) * 100) + "% - " + ((L - 2 < 0 ? 0 : (L - 2) / 3) * 50) + 'px)"></span>' + nodes + "</div></div>" +
+      '<button type="button" class="k big" id="btnNice" style="background:#a8e2dc">Keep going ▶</button>';
+    $("live").textContent = "Level " + L + " unlocked for " + m.name + ".";
+    sfx.level(); setTimeout(() => confetti(160), 200);
+  } else {
+    head = "★ 20 HOURS · FULL SIGNAL ★";
+    scr.style.background = "#2a2433";
+    html = '<span class="deco" style="left:8px;top:16px;width:84px;height:84px;border-radius:999px;background:repeating-conic-gradient(#f6c94a 0 6deg,transparent 6deg 30deg)"></span>' +
+      '<span class="deco" style="right:0;top:60px;width:100px;height:100px;border-radius:999px;background:repeating-conic-gradient(#e18fc7 0 6deg,transparent 6deg 30deg)"></span>' +
+      '<span class="deco" style="left:20px;bottom:20px;width:70px;height:70px;border-radius:999px;background:repeating-conic-gradient(#62c7b5 0 6deg,transparent 6deg 30deg)"></span>' +
+      '<div class="pop-in" style="position:relative;width:190px;height:190px"><svg width="190" height="190" viewBox="0 0 240 240" role="img" aria-label="20 of 20 hours"><circle cx="120" cy="120" r="114" fill="#fff6e2" stroke="#1f1b24" stroke-width="5"/><g transform="rotate(-90 120 120)" fill="none" stroke-width="24"><circle cx="120" cy="120" r="96" stroke="#f6c94a" stroke-dasharray="150.8 452.4"/><circle cx="120" cy="120" r="96" stroke="#e18fc7" stroke-dasharray="150.8 452.4" stroke-dashoffset="-150.8"/><circle cx="120" cy="120" r="96" stroke="#62c7b5" stroke-dasharray="150.8 452.4" stroke-dashoffset="-301.6"/><circle cx="120" cy="120" r="96" stroke="#8fa3e8" stroke-dasharray="150.8 452.4" stroke-dashoffset="-452.4"/></g><circle cx="120" cy="120" r="108" fill="none" stroke="#1f1b24" stroke-width="3"/><circle cx="120" cy="120" r="84" fill="#141118" stroke="#1f1b24" stroke-width="4"/></svg>' +
+      '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="86" height="86" viewBox="0 0 24 24" aria-hidden="true"><path d="' + TROPHY + '" fill="#f6c94a" stroke="#fff6e2" stroke-width="1.3" stroke-linejoin="round"/></svg></div></div>' +
+      '<div class="tilt"><span class="ex et pop-in d1" style="font-size:48px">MISSION</span><span class="ex ey pop-in d2" style="font-size:46px">COMPLETE!</span></div>';
+    ph = '<div class="summary"><span class="t">20 hours of ' + esc(m.name) + '</span><span class="px" style="font-size:19px">You put in the time, and it shows.</span><span class="px" style="font-size:18px;color:#4b4550">Started ' + fmtDate(m.createdAt) + " · " + m.sessions + (m.sessions === 1 ? " session" : " sessions") + "</span></div>" +
+      '<div class="keys2"><button type="button" class="k big" id="btnNewAfter" style="background:#e18fc7"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New mission</button><button type="button" class="k big" id="btnNice">Keep practising</button></div>';
+    $("live").textContent = "Mission complete. 20 hours of " + m.name + ".";
+    sfx.done(); setTimeout(() => confetti(260), 200); setTimeout(() => confetti(180), 1000);
+  }
+  scr.innerHTML = html;
+  $("dispHead").textContent = head;
+  panel.innerHTML = ph;
+  render();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    panel.querySelectorAll("[data-to]").forEach((el) => { el.style.width = el.classList.contains("fill") ? el.dataset.to : el.dataset.to + "%"; });
+  }));
+  const nice = $("btnNice"); if (nice) nice.focus({ preventScroll: true });
+}
+function closeTake() {
+  const m = mission();
+  if (queue.length) { showTake(queue.shift()); return; }
+  take = null;
+  holdRing = m ? t0ring : null;
+  render();
+  requestAnimationFrame(() => requestAnimationFrame(() => { holdRing = null; if (!take && view === "timer") renderTimer(); }));
+  $("btnPlay").focus({ preventScroll: true });
+}
+let t0ring = 0, holdRing = null;
+
+/* ---------- actions ---------- */
+function boing(el) { if (reduced()) return; el.classList.remove("boing"); void el.offsetWidth; el.classList.add("boing"); }
+let wake = null;
+async function wakeOn() { try { if (navigator.wakeLock && !wake) { wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release", () => { wake = null; }); } } catch (e) { wake = null; } }
+function wakeOff() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+
+$("btnPlay").addEventListener("click", (ev) => {
+  const m = mission(); if (!m) return;
+  boing(ev.currentTarget);
+  if (isRunning()) return;
+  if (S.run) { S.run.start = Date.now(); sfx.start(); }
+  else { S.run = { id: m.id, start: Date.now(), carry: 0 }; sfx.start(); }
+  wakeOn(); save(); render();
+});
+$("btnPause").addEventListener("click", () => {
+  if (!isRunning()) return;
+  S.run.carry += Math.max(0, (Date.now() - S.run.start) / 1000); S.run.start = 0;
+  sfx.pause(); wakeOff(); save(); render();
+});
+$("btnBank").addEventListener("click", (ev) => {
+  if (!S.run) return;
+  const add = Math.floor(elapsed()); const m = runMission();
+  if (!m || add < 1) return;
+  boing(ev.currentTarget);
+  const before = m.secs; m.secs += add; m.sessions += 1;
+  S.run = null; S.active = m.id; wakeOff(); save();
+  t0ring = before;
+  queue = [];
+  const lb = levelOf(before), la = levelOf(m.secs);
+  if (la > lb) queue.push(la >= 4 ? { kind: "complete", id: m.id } : { kind: "level", id: m.id, level: la });
+  showTake({ kind: "bank", id: m.id, add, before, after: m.secs });
+});
+$("btnDiscard").addEventListener("click", (ev) => {
+  const b = ev.currentTarget;
+  if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Tap again to discard " + fmtClock(elapsed()); return; }
+  S.run = null; wakeOff(); save(); render(); toast("Session discarded. Nothing was banked.");
+});
+$("btnPicker").addEventListener("click", () => {
+  sfx.click();
+  if (!mission()) { openEditor(null); return; }
+  if (S.run) { toast("Bank or discard this session to switch missions."); return; }
+  view = "missions"; render();
+});
+$("btnEdit").addEventListener("click", () => { const m = mission(); if (m && !S.run) { sfx.click(); openEditor(m.id); } });
+$("btnSound").addEventListener("click", () => { S.muted = !S.muted; save(); renderSound(); if (!S.muted) tone(988, 0, 0.08); });
+$("btnSettings").addEventListener("click", () => { sfx.click(); openSettings(); });
+$("tabTimer").addEventListener("click", () => { if (view !== "timer") { sfx.click(); view = "timer"; render(); } });
+$("tabMissions").addEventListener("click", () => { if (view !== "missions") { sfx.click(); view = "missions"; render(); } });
+$("takePanel").addEventListener("click", (e) => {
+  if (e.target.closest("#btnNice")) { sfx.click(); closeTake(); }
+  else if (e.target.closest("#btnNewAfter")) { queue = []; take = null; render(); openEditor(null); }
+});
+$("mList").addEventListener("click", (e) => {
+  if (e.target.closest("#btnAdd")) { sfx.click(); openEditor(null); return; }
+  const del = e.target.closest("[data-del]");
+  if (del) {
+    const dm = S.missions.find((x) => x.id === del.dataset.del); if (!dm) return;
+    if (del.dataset.sure !== "1") {
+      document.querySelectorAll(".mdel.sure").forEach((b) => { b.classList.remove("sure"); b.dataset.sure = ""; b.querySelector(".px").textContent = "DELETE"; });
+      del.dataset.sure = "1"; del.classList.add("sure"); del.querySelector(".px").textContent = "SURE?";
+      del.setAttribute("aria-label", "Tap again to delete " + dm.name);
+      sfx.click(); toast("Tap again to delete " + dm.name + (dm.secs ? " and its " + fmtHM(dm.secs) : "") + ".");
+      return;
+    }
+    S.missions = S.missions.filter((x) => x.id !== dm.id);
+    if (S.run && S.run.id === dm.id) { S.run = null; wakeOff(); }
+    if (S.active === dm.id) S.active = S.missions[0] ? S.missions[0].id : null;
+    save(); render(); tone(494, 0, 0.1, "triangle", 0.1); tone(330, 0.09, 0.16, "triangle", 0.1); toast(dm.name + " deleted.");
+    return;
+  }
+  const row = e.target.closest(".mrow"); if (!row) return;
+  const id = row.dataset.id;
+  if (S.run && S.run.id !== id) { const rm = runMission(); toast("Bank or discard your " + (rm ? rm.name : "") + " session first."); return; }
+  S.active = id; save(); view = "timer"; tone(660, 0, 0.05); tone(990, 0.05, 0.08); render();
+});
+$("btnClearEx").addEventListener("click", () => {
+  if (S.run && S.missions.some((m) => m.example && m.id === S.run.id)) S.run = null;
+  S.missions = S.missions.filter((m) => !m.example); S.examples = false;
+  S.active = S.missions[0] ? S.missions[0].id : null;
+  save(); render(); toast("Examples cleared. Add your first mission.");
+});
+
+let toastT = 0;
+function toast(msg) {
+  document.querySelectorAll(".toast").forEach((t) => t.remove());
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600);
+}
+
+/* ---------- sheets ---------- */
+let lastFocus = null;
+function openSheet(html, onMount) {
+  lastFocus = document.activeElement;
+  const o = $("overlay");
+  o.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT">' + html + "</div>";
+  o.hidden = false;
+  onMount(o.firstChild);
+}
+function closeSheet() { const o = $("overlay"); o.hidden = true; o.innerHTML = ""; if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); }
+$("overlay").addEventListener("click", (e) => { if (e.target.id === "overlay") closeSheet(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("overlay").hidden) closeSheet(); });
+
+function openEditor(id) {
+  const m = id ? S.missions.find((x) => x.id === id) : null;
+  let icon = m ? m.icon : Object.keys(ICONS)[S.missions.length % 8];
+  let color = m ? m.color : COLORS[(S.missions.length + 3) % COLORS.length];
+  const iconBtns = Object.keys(ICONS).map((k) => '<button type="button" class="k" data-icon="' + k + '" aria-label="' + ICON_NAMES[k] + '" aria-pressed="' + (k === icon) + '">' + ico(k) + "</button>").join("");
+  const colBtns = COLORS.map((c) => '<button type="button" data-color="' + c + '" aria-label="' + COLOR_NAMES[c] + '" aria-pressed="' + (c === color) + '" style="background:' + c + '"></button>').join("");
+  openSheet(
+    '<div class="head"><div style="display:flex;flex-direction:column;gap:4px"><h2 id="sheetT">' + (m ? "Edit mission" : "New mission") + '</h2><span class="px" style="font-size:19px">' + (m ? fmtHM(m.secs) + " banked so far" : "Twenty hours. Four stars. Go.") + '</span></div><button type="button" class="x" id="sx" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>' +
+    '<form id="mf" novalidate style="display:flex;flex-direction:column;gap:16px"><div><label class="flab" for="fName">What are you learning?</label><input type="text" id="fName" maxlength="28" autocomplete="off" placeholder="e.g. Piano" value="' + (m ? esc(m.name) : "") + '"><p class="err" id="fErr" hidden>Give your mission a name.</p></div>' +
+    '<div><span class="flab">Pick an icon</span><div class="icons" id="fIcons">' + iconBtns + "</div></div>" +
+    '<div><span class="flab">Pick a colour</span><div class="cols" id="fCols">' + colBtns + "</div></div>" +
+    (m ? '<button type="button" class="danger" id="fDel">Remove this mission</button>' : "") +
+    '<div class="keys2"><button type="submit" class="k go">' + (m ? "Save" : "Start mission") + '</button><button type="button" class="k plain" id="fCancel">Cancel</button></div></form>',
+    (root) => {
+      const name = root.querySelector("#fName");
+      setTimeout(() => name.focus(), 30);
+      root.querySelector("#sx").onclick = closeSheet;
+      root.querySelector("#fCancel").onclick = closeSheet;
+      root.querySelector("#fIcons").addEventListener("click", (e) => { const b = e.target.closest("[data-icon]"); if (!b) return; icon = b.dataset.icon; root.querySelectorAll("[data-icon]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); sfx.click(); });
+      root.querySelector("#fCols").addEventListener("click", (e) => { const b = e.target.closest("[data-color]"); if (!b) return; color = b.dataset.color; root.querySelectorAll("[data-color]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); sfx.click(); });
+      const del = root.querySelector("#fDel");
+      if (del) del.onclick = () => {
+        if (del.dataset.sure !== "1") { del.dataset.sure = "1"; del.textContent = "Tap again to remove " + m.name + " and its " + fmtHM(m.secs); return; }
+        S.missions = S.missions.filter((x) => x.id !== m.id);
+        if (S.run && S.run.id === m.id) S.run = null;
+        if (S.active === m.id) S.active = S.missions[0] ? S.missions[0].id : null;
+        save(); closeSheet(); render(); toast(m.name + " removed.");
+      };
+      root.querySelector("#mf").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const v = name.value.trim();
+        if (!v) { root.querySelector("#fErr").hidden = false; name.focus(); return; }
+        if (m) { m.name = v; m.icon = icon; m.color = color; }
+        else {
+          const nm = { id: uid(), name: v, icon, color, secs: 0, sessions: 0, createdAt: Date.now(), example: false };
+          S.missions.push(nm);
+          if (!S.run) S.active = nm.id;
+        }
+        save(); closeSheet(); view = "timer"; render(); sfx.start();
+        if (!m) toast(v + " loaded. Press Let's go when you're ready.");
+      });
+    }
+  );
+}
+function openSettings() {
+  openSheet(
+    '<div class="head"><h2 id="sheetT">Settings</h2><button type="button" class="x" id="sx" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1f1b24" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>' +
+    '<div class="setrow"><span class="px">Sound effects</span><div class="toggle" role="group" aria-label="Sound effects"><button type="button" id="sOn" aria-pressed="' + !S.muted + '">On</button><button type="button" id="sOff" aria-pressed="' + S.muted + '">Off</button></div></div>' +
+    '<p class="note">' + (reduced() ? "Your device asks for reduced motion, so celebrations play without movement or confetti." : "Celebrations follow your device's motion setting. Turn on reduced motion there for calmer screens.") + "</p>" +
+    '<p class="note">Your progress is saved on this device' + (persisted ? ", and the browser has agreed to keep it." : ".") + ' Save a backup now and then so it can never be lost.' + (S.lastBackup ? " Last backup: " + fmtDate(S.lastBackup) + "." : "") + "</p>" +
+    '<div class="keys2"><button type="button" class="k plain" id="sBackup">Save a backup</button><button type="button" class="k plain" id="sRestore">Restore</button></div>' +
+    '<input type="file" id="sFile" accept="application/json,.json" hidden>' +
+    '<div id="sConfirm" class="notice" hidden><p id="sConfirmT"></p><div class="keys2"><button type="button" class="k go" id="sDoRestore">Replace my progress</button><button type="button" class="k plain" id="sNoRestore">Cancel</button></div></div>' +
+    '<button type="button" class="danger" id="sReset">Erase all missions and start over</button>' +
+    '<button type="button" class="k go" id="sDone">Done</button>',
+    (root) => {
+      const set = (muted) => { S.muted = muted; save(); renderSound(); root.querySelector("#sOn").setAttribute("aria-pressed", String(!muted)); root.querySelector("#sOff").setAttribute("aria-pressed", String(muted)); if (!muted) tone(988, 0, 0.08); };
+      root.querySelector("#sOn").onclick = () => set(false);
+      root.querySelector("#sOff").onclick = () => set(true);
+      root.querySelector("#sx").onclick = closeSheet;
+      root.querySelector("#sDone").onclick = closeSheet;
+      root.querySelector("#sBackup").onclick = () => { sfx.click(); doBackup(); };
+      const fileIn = root.querySelector("#sFile");
+      let pending = null;
+      root.querySelector("#sRestore").onclick = () => { sfx.click(); fileIn.value = ""; fileIn.click(); };
+      fileIn.onchange = () => {
+        const f = fileIn.files && fileIn.files[0]; if (!f) return;
+        f.text().then((t) => {
+          pending = readBackup(t);
+          const hrs = pending.missions.reduce((a, m) => a + m.secs, 0);
+          root.querySelector("#sConfirmT").textContent = "This backup has " + pending.missions.length + (pending.missions.length === 1 ? " mission" : " missions") + " and " + fmtHM(hrs) + " banked. Restoring replaces everything on this device.";
+          root.querySelector("#sConfirm").hidden = false;
+        }).catch(() => toast("That file isn't a 20 Hours backup."));
+      };
+      root.querySelector("#sNoRestore").onclick = () => { pending = null; root.querySelector("#sConfirm").hidden = true; };
+      root.querySelector("#sDoRestore").onclick = () => {
+        if (!pending) return;
+        S = pending; S.updatedAt = Date.now(); wakeOff(); save(); closeSheet(); view = "timer"; render(); toast("Backup restored.");
+      };
+      setTimeout(() => root.querySelector("#sDone").focus(), 30);
+      const r = root.querySelector("#sReset");
+      r.onclick = () => {
+        if (r.dataset.sure !== "1") { r.dataset.sure = "1"; r.textContent = "Tap again to erase every mission and all banked time"; return; }
+        S.missions = []; S.run = null; S.active = null; S.examples = false; wakeOff(); save(); closeSheet(); view = "timer"; render(); toast("All clear. Add your first mission.");
+      };
+    }
+  );
+}
+
+/* ---------- boot ---------- */
+(function vu() {
+  const v = $("vu"), cols = ["#62c7b5", "#62c7b5", "#f6c94a", "#62c7b5", "#e18fc7", "#62c7b5", "#f6c94a", "#62c7b5", "#62c7b5", "#e18fc7", "#62c7b5", "#f6c94a"];
+  v.innerHTML = cols.map((c, i) => '<i style="background:' + c + ";animation-duration:" + (0.35 + ((i * 37) % 9) / 20) + "s;animation-delay:-" + ((i * 13) % 7) / 10 + 's"></i>').join("");
+})();
+render();
+setInterval(() => { if (S.run && !take && view === "timer") renderTimer(); }, 250);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && isRunning()) wakeOn(); });
+initStore();
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(() => {}); });
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloaded || !navigator.serviceWorker.controller) return;
+    if (take || !$("overlay").hidden) return;
+    reloaded = true; location.reload();
+  });
+}
+})();
+</script>
+</body>
+</html>
